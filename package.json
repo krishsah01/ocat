@@ -7,6 +7,10 @@
     "check-updates:all": "ncu --configFileName .check-updates.json --target latest --errorLevel 1"
   },
   "devDependencies": {
+    "@hookform/devtools": "^4.3.1",
     "npm-check-updates": "^16.5.1"
+  },
+  "dependencies": {
+    "react-hook-form": "^7.52.2"
   }
 }
