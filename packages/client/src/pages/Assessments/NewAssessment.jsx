@@ -9,8 +9,34 @@ export const NewAssessment = () => {
   // packages/client/src/services/AssessmentService.js and then onto the packages/api/src/routes/assessment express API
 
   const { handleSubmit, register } = useForm();
-  const onSubmit = async (data) => {
-    await AssessmentService.submit(data);
+
+  const onSubmit = async (assessment) => {
+
+    const score = Number(assessment.previousContact) +
+    Number(assessment.catAltercations) +
+    Number(assessment.ownerAltercations) +
+    Number(assessment.hissesAtStrangers);
+
+    let riskLevel = ``;
+    const risk = (scores) => {
+      if (scores >= 0 && scores <= 1) { // calculates risk level
+        riskLevel = `Low Risk`;
+      } else if (scores >= 2 && scores <= 3) {
+        riskLevel = `Medium Risk`;
+      } else if (scores >= 4 && scores <= 5) {
+        riskLevel = `High Risk`;
+      }
+      return riskLevel;
+    };
+
+    const formData = {
+      catBehaviorInstrument: assessment.catBehaviorInstrument,
+      catDob: assessment.catDob,
+      catName: assessment.catName,
+      risk: risk(score),
+      score,
+    };
+    await AssessmentService.submit(formData); // sending data to assessmentServices
   };
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
@@ -29,7 +55,7 @@ export const NewAssessment = () => {
       </Form.Group>
 
       {/* Cat Details Section */}
-      <Form.Group className="mb-3" controlId="catDetails">
+      <Form.Group className="mb-3" controlId="catName">
         <h2>Cat Details</h2>
         <Form.Label>Cat Name</Form.Label>
         <Form.Control
@@ -40,7 +66,7 @@ export const NewAssessment = () => {
         {// {errors.catName && <span>This field is required</span>}
         }
       </Form.Group>
-      <Form.Group className="mb-3" controlId="catDetails">
+      <Form.Group className="mb-3" controlId="catDob">
         <Form.Label>Cat Date of Birth</Form.Label>
         <Form.Control
           type="date"
@@ -61,20 +87,20 @@ export const NewAssessment = () => {
           id="previousContactYes"
           label="Yes"
           value="1"
-          {...register(`hasPreviousContact`, { required: true })}
+          {...register(`previousContact`, { required: true })}
         />
         <Form.Check
           type="radio"
           id="previousContactNo"
           label="No"
           value="0"
-          {...register(`hasPreviousContact`, { required: true })}
+          {...register(`previousContact`, { required: true })}
         />
         {// {errors.hasPreviousContact && <span>This field is required</span>}
         }
       </Form.Group>
 
-      <Form.Group className="mb-3" controlId="physicalAltercationsCats">
+      <Form.Group className="mb-3" controlId="catAltercations">
         <Form.Label>Physical Altercations with Other Cats</Form.Label>
         <Form.Check
           type="radio"
@@ -94,7 +120,7 @@ export const NewAssessment = () => {
         }
       </Form.Group>
 
-      <Form.Group className="mb-3" controlId="physicalAltercationsOwner">
+      <Form.Group className="mb-3" controlId="ownerAltercations">
         <Form.Label>Physical Altercations with Owner (scratching, biting, etc...)</Form.Label>
         <Form.Check
           type="radio"
