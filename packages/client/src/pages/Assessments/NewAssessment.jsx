@@ -42,11 +42,13 @@ export const NewAssessment = () => {
     <Form onSubmit={handleSubmit(onSubmit)}>
       {/* Instrument Section */}
       <Form.Group className="mb-3" controlId="catBehaviorInstrument">
-        <h2>Instrument</h2>
-        <Form.Label>Cat Behavioral Instrument</Form.Label>
+        <h2>Cat Assessment Info</h2>
+        <Form.Label>Instrument</Form.Label> {
+          // need to change this to static text
+        }
         <Form.Control
-          type="text"
-          placeholder="Enter Cat Behavior Instrument"
+          type="static text"
+          placeholder="Cat Behavior Instrument"
           {...register(`catBehaviorInstrument`, { required: true })}
         />
 
@@ -146,14 +148,14 @@ export const NewAssessment = () => {
           type="radio"
           id="playsWellWithDogsNo"
           label="No"
-          value="0"
+          value="1"
           {...register(`playsWithDogs`, { required: true })}
         />
         <Form.Check
           type="radio"
           id="playsWellWithDogsYes"
           label="Yes"
-          value="1"
+          value="0"
           {...register(`playsWithDogs`, { required: true })}
         />
         {// {errors.playsWithDogs && <span>This field is required</span>}
