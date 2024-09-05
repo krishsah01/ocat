@@ -17,7 +17,10 @@ export const AssessmentList = () => {
       {/*
           List goes here
           Please use the library react-table https://www.npmjs.com/package/react-table
-      */}
+           only thing left to do */
+
+      }
+
     </div>
   );
 };

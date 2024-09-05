@@ -19,10 +19,12 @@ export class AssessmentService {
       // Choose the correct method, url, and data to send
       // in a request to the express packages/api/src/routes/assessment.js
       // NOTE: the http.config file automatically adds /api to the front of your url
-      return Axios.METHOD(`/some-url`, {
-        params: {
-        },
-      })
+      return Axios.get(
+        `/list`, {
+          params: {
+          },
+        }
+      )
         .then(response => response.data.data.assessment);
     }
     catch (err) {
