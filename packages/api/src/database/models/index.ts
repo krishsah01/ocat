@@ -1,4 +1,4 @@
-import type { Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import { Assessment } from './Assessment';
 
 export {

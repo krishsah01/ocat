@@ -20,7 +20,7 @@ export class AssessmentService {
       // in a request to the express packages/api/src/routes/assessment.js
       // NOTE: the http.config file automatically adds /api to the front of your url
       return Axios.get(
-        `/list`, {
+        `assessment/list`, {
           params: {
           },
         }

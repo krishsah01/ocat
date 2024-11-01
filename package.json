@@ -11,7 +11,9 @@
     "npm-check-updates": "^16.5.1"
   },
   "dependencies": {
+    "8": "^0.0.1",
+    "dayjs": "^1.11.13",
     "react-hook-form": "^7.52.2",
-    "react-table": "^7.8.0"
+    "sequelize": "^6.37.5"
   }
 }
