@@ -25,7 +25,7 @@ export class AssessmentService {
           },
         }
       )
-        .then(response => response.data.data.assessment);
+        .then(response => response.data.data.assessments);
     }
     catch (err) {
       throw new Error(`${err.response.statusText} - ${err.response.data.message}`);

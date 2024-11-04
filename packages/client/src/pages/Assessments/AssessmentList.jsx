@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   createColumnHelper,
@@ -9,64 +10,79 @@ import { AssessmentService } from '../../services/AssessmentService';
 
 export const AssessmentList = () => {
   const [ assessments, setAssessments ] = useState([]);
-  const [ deleteResponse, setDeleteResponse ] = useState();
-  const [ deletedId, setDeletedId ] = useState();
+  const [ deleteResponse, setDeleteResponse ] = useState(null);
+  const [ deletedId, setDeletedId ] = useState(null);
 
   // Fetch assessments
   useEffect(() => {
     const fetchAssessments = async () => {
-      const data = await AssessmentService.getList();
-      setAssessments(data);
+      try {
+        const data = await AssessmentService.getList();
+        console.log(data);
+        setAssessments(data || []); // Fallback to an empty array if data is undefined
+      } catch (error) {
+        console.error(`Failed to fetch assessments:`, error);
+      }
     };
     fetchAssessments();
   }, [ deletedId ]);
 
   // Delete handler
-  const handleDelete = async (id) => { // Removed type annotation
-    const response = await AssessmentService.deleteAssessment(id);
-    setDeleteResponse(response.message);
-    setDeletedId(id);
+  const handleDelete = async (id) => {
+    try {
+      const response = await AssessmentService.deleteAssessment(id);
+      setDeleteResponse(response.message);
+      setDeletedId(id);
+    } catch (error) {
+      console.error(`Failed to delete assessment:`, error);
+    }
   };
 
   // Define columns
   const columnHelper = createColumnHelper();
   const columns = useMemo(() => [
     columnHelper.accessor(`id`, {
-      footer: info => info.column.id,
       header: `ID`,
-    }),
-    columnHelper.accessor(`catName`, {
       footer: info => info.column.id,
-      header: `Cat Name`,
-    }),
-    columnHelper.accessor(`catDateOfBirth`, {
-      footer: info => info.column.id,
-      header: `Cat Date of Birth`,
-    }),
-    columnHelper.accessor(`score`, {
-      footer: info => info.column.id,
-      header: `Score`,
-    }),
-    columnHelper.accessor(`riskLevel`, {
-      footer: info => info.column.id,
-      header: `Risk Level`,
     }),
     columnHelper.accessor(`instrumentType`, {
-      footer: info => info.column.id,
       header: `Instrument Type`,
+      footer: info => info.column.id,
     }),
+    columnHelper.accessor(`score`, {
+      header: `Score`,
+      footer: info => info.column.id,
+    }),
+    columnHelper.accessor(`riskLevel`, {
+      header: `Risk Level`,
+      footer: info => info.column.id,
+    }),
+    columnHelper.accessor(`catName`, {
+      header: `Cat Name`,
+      footer: info => info.column.id,
+    }),
+    columnHelper.accessor(`catDateOfBirth`, {
+      header: `Cat Date of Birth`,
+      footer: info => info.column.id,
+    }),
+    columnHelper.accessor(`deletedAt`, {
+      header: `Deleted At`,
+      footer: info => info.column.id,
+    }),
+
     columnHelper.display({
-      cell: info =>
-        <button onClick={() => handleDelete(info.row.original.id)}>Delete</button>,
-      header: `Actions`,
       id: `actions`,
+      header: `Actions`,
+      cell: info =>
+        <button onClick={() => handleDelete(info.row.original.id)}>Delete</button>
+      ,
     }),
-  ], [ handleDelete ]);
+  ], []);
 
   // Create the table instance
   const table = useReactTable({
-    columns,
     data: assessments,
+    columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -88,13 +104,17 @@ export const AssessmentList = () => {
             </tr>)}
         </thead>
         <tbody>
-          {table.getRowModel().rows.map(row =>
-            <tr key={row.id}>
-              {row.getVisibleCells().map(cell =>
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>)}
-            </tr>)}
+          {table.getRowModel().rows.length > 0 ?
+            table.getRowModel().rows.map(row =>
+              <tr key={row.id}>
+                {row.getVisibleCells().map(cell =>
+                  <td key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>)}
+              </tr>) :
+            <tr>
+              <td colSpan={columns.length}>No data available</td>
+            </tr>}
         </tbody>
         <tfoot>
           {table.getFooterGroups().map(footerGroup =>
