@@ -1,6 +1,6 @@
+/* eslint-disable sort-keys */
 const { AssessmentService } = require(`../microservices`);
 const { ResponseHandler } = require(`../utils`);
-
 const { Router } = require(`express`);
 
 const assessmentRouter = Router();
@@ -34,6 +34,23 @@ assessmentRouter.get(
         res,
         `Fetched assessments`,
         { assessments },
+      );
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+assessmentRouter.delete(
+  `/delete/:id`,
+  async (req, res, next) => {
+    try {
+      const assessment = await AssessmentService.Delete(req.params.id);
+      ResponseHandler(
+        res,
+        `Deleted assessment`,
+        { assessment },
+
       );
     } catch (err) {
       next(err);

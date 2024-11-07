@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Form } from 'react-bootstrap';
@@ -8,52 +9,60 @@ export const NewAssessment = () => {
   // create a form that utilizes the "onSubmit" function to send data to
   // packages/client/src/services/AssessmentService.js and then onto the packages/api/src/routes/assessment express API
 
-  const { handleSubmit, register } = useForm();
+  const { handleSubmit, register, reset } = useForm();
 
   const onSubmit = async (assessment) => {
+    try {
+      const score = Number(assessment.previousContact) +
+      Number(assessment.catAltercations) +
+      Number(assessment.ownerAltercations) +
+      Number(assessment.hissesAtStrangers);
 
-    const score = Number(assessment.previousContact) +
-    Number(assessment.catAltercations) +
-    Number(assessment.ownerAltercations) +
-    Number(assessment.hissesAtStrangers);
+      let riskLevel = ``;
+      const risk = (scores) => {
+        if (scores >= 0 && scores <= 1) { // calculates risk level
+          riskLevel = `Low Risk`;
+        } else if (scores >= 2 && scores <= 3) {
+          riskLevel = `Medium Risk`;
+        } else if (scores >= 4 && scores <= 5) {
+          riskLevel = `High Risk`;
+        }
+        return riskLevel;
+      };
 
-    let riskLevel = ``;
-    const risk = (scores) => {
-      if (scores >= 0 && scores <= 1) { // calculates risk level
-        riskLevel = `Low Risk`;
-      } else if (scores >= 2 && scores <= 3) {
-        riskLevel = `Medium Risk`;
-      } else if (scores >= 4 && scores <= 5) {
-        riskLevel = `High Risk`;
-      }
-      return riskLevel;
-    };
+      const formData = {
+        catBehaviorInstrument: assessment.catBehaviorInstrument,
+        catName: assessment.catName,
+        catDob: assessment.catDob,
+        risk: risk(score),
+        score,
+      };
+      console.log(`Form Data to Submit:`, formData);
+      await AssessmentService.submit(formData); // sending data to assessmentServices
+      reset();
+      console.log(`Form submitted successfully`);
 
-    const formData = {
-      catBehaviorInstrument: assessment.catBehaviorInstrument,
-      catDob: assessment.catDob,
-      catName: assessment.catName,
-      risk: risk(score),
-      score,
-    };
-    await AssessmentService.submit(formData); // sending data to assessmentServices
+      window.alert(`Form submitted successfully!`);
+      window.location.reload();
+    } catch (error) {
+      console.error(`Error submitting form:`, error);
+      window.alert(`There was an error submitting the form. Please try again.`);
+    }
   };
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
+
       {/* Instrument Section */}
       <Form.Group className="mb-3" controlId="catBehaviorInstrument">
         <h2>Cat Assessment Info</h2>
         <Form.Label>Instrument</Form.Label> {
-          // need to change this to static text
         }
         <Form.Control
-          type="static text"
+          type="text"
           placeholder="Cat Behavior Instrument"
-          {...register(`catBehaviorInstrument`, { required: true })}
+          disabled={true}
+          {...register(`catBehaviorInstrument`, { required: false })}
         />
-
-        { // {errors.catBehaviorInstrument && <span>This field is required</span>}
-        }
       </Form.Group>
 
       {/* Cat Details Section */}

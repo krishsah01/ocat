@@ -62,11 +62,14 @@ InferCreationAttributes<Assessment>
       },
       deletedAt: {
         type: DataTypes.DATE,
+        allowNull: true, //idk
       },
       /* eslint-enable sort-keys */
-    }, {
-      sequelize,
-    });
+      }, {
+        sequelize,
+        paranoid: true,
+        timestamps: true,
+      });
 
     return Assessment;
   }

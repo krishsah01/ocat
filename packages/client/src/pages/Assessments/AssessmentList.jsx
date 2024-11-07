@@ -1,4 +1,5 @@
 /* eslint-disable sort-keys */
+import Table from 'react-bootstrap/Table';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   createColumnHelper,
@@ -10,8 +11,17 @@ import { AssessmentService } from '../../services/AssessmentService';
 
 export const AssessmentList = () => {
   const [ assessments, setAssessments ] = useState([]);
+  const [ deletedId, setDeletedId ] = useState();
   const [ deleteResponse, setDeleteResponse ] = useState(null);
-  const [ deletedId, setDeletedId ] = useState(null);
+  // Initialize filter states
+  const [ filters, setFilters ] = useState({
+    id: ``,
+    instrumentType: ``,
+    score: ``,
+    riskLevel: ``,
+    catName: ``,
+    catDateOfBirth: ``,
+  });
 
   // Fetch assessments
   useEffect(() => {
@@ -27,79 +37,104 @@ export const AssessmentList = () => {
     fetchAssessments();
   }, [ deletedId ]);
 
-  // Delete handler
   const handleDelete = async (id) => {
-    try {
-      const response = await AssessmentService.deleteAssessment(id);
-      setDeleteResponse(response.message);
-      setDeletedId(id);
-    } catch (error) {
-      console.error(`Failed to delete assessment:`, error);
-    }
+    const response = await AssessmentService.deleteAssessment(id);
+    setDeleteResponse(response.message);
+    setDeletedId(id);
   };
 
-  // Define columns
+  // Handle filter changes
+  const handleFilterChange = (columnId, value) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [columnId]: value,
+    }));
+  };
+
+  // Define columns with filters
   const columnHelper = createColumnHelper();
   const columns = useMemo(() => [
     columnHelper.accessor(`id`, {
       header: `ID`,
+      cell: info => info.getValue(),
       footer: info => info.column.id,
+      filter: `equals`,
     }),
     columnHelper.accessor(`instrumentType`, {
       header: `Instrument Type`,
+      cell: info => info.getValue(),
       footer: info => info.column.id,
+      filter: `includes`,
     }),
     columnHelper.accessor(`score`, {
       header: `Score`,
+      cell: info => info.getValue(),
       footer: info => info.column.id,
+      filter: `equals`,
     }),
     columnHelper.accessor(`riskLevel`, {
       header: `Risk Level`,
+      cell: info => info.getValue(),
       footer: info => info.column.id,
+      filter: `includes`,
     }),
     columnHelper.accessor(`catName`, {
       header: `Cat Name`,
+      cell: info => info.getValue(),
       footer: info => info.column.id,
+      filter: `includes`,
     }),
     columnHelper.accessor(`catDateOfBirth`, {
       header: `Cat Date of Birth`,
+      cell: info => info.getValue(),
       footer: info => info.column.id,
+      filter: `equals`,
     }),
-    columnHelper.accessor(`deletedAt`, {
-      header: `Deleted At`,
-      footer: info => info.column.id,
-    }),
-
     columnHelper.display({
       id: `actions`,
       header: `Actions`,
       cell: info =>
-        <button onClick={() => handleDelete(info.row.original.id)}>Delete</button>
-      ,
+        <button className={`delete`} onClick={() => handleDelete(info.row.original.id)}>Delete</button>,
     }),
   ], []);
 
+  // Filter assessments based on user input
+  const filteredAssessments = useMemo(() => assessments.filter((assessment) => Object.keys(filters).every((key) => {
+    const filterValue = filters[key];
+    if (!filterValue) { return true; } // Skip empty filters
+    const cellValue = assessment[key];
+    return cellValue?.toString().toLowerCase().includes(filterValue.toLowerCase());
+  })), [ assessments, filters ]);
+
   // Create the table instance
   const table = useReactTable({
-    data: assessments,
+    data: filteredAssessments,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
     <div className="container">
-      <table>
+      <Table striped bordered hover>
         <thead>
+          {/* Render filter input fields */}
           {table.getHeaderGroups().map(headerGroup =>
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header =>
                 <th key={header.id}>
-                  {header.isPlaceholder ?
-                    null :
-                    flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                  {header.isPlaceholder ? null : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
+                  {/* Add input for filtering except for the Actions column */}
+                  {header.column.id !== `actions` &&
+                    <input
+                      type="text"
+                      placeholder={`Filter by ${header.column.columnDef.header}`}
+                      value={filters[header.column.id] || ``}
+                      onChange={(e) =>
+                        handleFilterChange(header.column.id, e.target.value)}
+                    />}
                 </th>)}
             </tr>)}
         </thead>
@@ -116,21 +151,8 @@ export const AssessmentList = () => {
               <td colSpan={columns.length}>No data available</td>
             </tr>}
         </tbody>
-        <tfoot>
-          {table.getFooterGroups().map(footerGroup =>
-            <tr key={footerGroup.id}>
-              {footerGroup.headers.map(header =>
-                <th key={header.id}>
-                  {header.isPlaceholder ?
-                    null :
-                    flexRender(
-                      header.column.columnDef.footer,
-                      header.getContext()
-                    )}
-                </th>)}
-            </tr>)}
-        </tfoot>
-      </table>
+      </Table>
+      {deleteResponse && <p>{deleteResponse}</p>}
     </div>
   );
 };
